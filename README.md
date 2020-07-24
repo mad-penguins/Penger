@@ -1,5 +1,5 @@
 # Penger
-**Penger** is Telegram Bot API Library for python. This library is being developed for our own service informer bots.
+**Penger** is a Telegram Bot API Library for python. This library is being developed for our own service informer bots.
 
 ## Getting started
 How to use this library in your project? Quite easy.
