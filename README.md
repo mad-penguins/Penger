@@ -13,7 +13,6 @@ Now let's look at the currently implemented Penger connectivity options:
   
   ```bash
   $ git submodule add https://github.com/mad-penguins/Penger.git
-  $ git add -A
   $ git commit -m "Add Penger as a submodule"
   ```
   > **Advantage**: you can always easily update *Penger* to the latest version:
@@ -32,7 +31,7 @@ Now let's look at the currently implemented Penger connectivity options:
   > - **Your_project_Folder**
   >     - |-  **.git**
   >     - |-  **Penger**
-  >        - |-  **.git**
+  >        - |-  *.git*
   >        - |-  *.gitignore*
   >        - |-  *LICENSE*
   >        - |-  *penger.py*
