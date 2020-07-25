@@ -2,7 +2,7 @@ import requests
 
 class Penger(object):
 	"""docstring for Penger"""
-	def __init__(self, token):
+	def __init__(self, token=None):
 		super(Penger, self).__init__()
 		self.token = token
 		self.apiAddress = "https://api.telegram.org/"
