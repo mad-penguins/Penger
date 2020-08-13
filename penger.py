@@ -40,9 +40,11 @@ class Penger(object):
 
 	def makeRequest(self, method, parameters, files=None):
 		if files is None:
-			self.response = requests.post(self.apiAddress + 'bot' + self.token+ '/' + method, data=parameters)
+			self.response = requests.post(self.apiAddress + 'bot' + /
+					self.token+ '/' + method, data=parameters)
 		else:
-			self.response = requests.post(self.apiAddress + 'bot' + self.token+ '/' + method, data=parameters, files=files)
+			self.response = requests.post(self.apiAddress + 'bot' + /
+					self.token+ '/' + method, data=parameters, files=files)
 		return self.isSuccessfulRequest()
 
 
@@ -60,4 +62,3 @@ class Penger(object):
 		files = {'photo': image}
 
 		return self.makeRequest('sendPhoto', parameters, files)
-		
