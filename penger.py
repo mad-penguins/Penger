@@ -1,19 +1,40 @@
-import time
+import random
 import logging
 import requests
+
+
+def geHash():
+    return '{0:010x}'.format(hash(random.random()))[:6]
 
 
 class Penger(object):
     """docstring for Penger"""
 
     def __init__(self, token='None', updateID=0,
-                 mainSender=None, privateSenderList=[], senderWhitelist=[], senderBlacklist=[],
-                 mainChat=None, privateChatList=[], chatWhitelist=[], chatBlacklist=[],
-                 accordance=[], emptyAccordance=None,
+                 mainSender=None, privateSenderList=None, senderWhitelist=None, senderBlacklist=None,
+                 mainChat=None, privateChatList=None, chatWhitelist=None, chatBlacklist=None,
+                 accordance=None, emptyAccordance=None,
                  loggingFile='penger.log', loggingFilemode='a', loggingLevel=logging.INFO,
                  loggingFormat='[%(asctime)s]# %(levelname)-8s %(name)s: %(message)s'):
 
         super(Penger, self).__init__()
+
+        if privateSenderList is None:
+            privateSenderList = []
+        if senderWhitelist is None:
+            senderWhitelist = []
+        if senderBlacklist is None:
+            senderBlacklist = []
+
+        if privateChatList is None:
+            privateChatList = []
+        if chatWhitelist is None:
+            chatWhitelist = []
+        if chatBlacklist is None:
+            chatBlacklist = []
+
+        if accordance is None:
+            accordance = []
 
         self.token = token
         self.apiAddress = "https://api.telegram.org/"
@@ -92,37 +113,42 @@ class Penger(object):
 
         return data
 
-    def startEmptyAccordance(self, data, hash=None):
-        if hash is None:
-            hash = '{0:010x}'.format(int(time.time() * 256))[4:]
+    def startEmptyAccordance(self, data, hashHex=None):
+        if hashHex is None:
+            hashHex = geHash()
 
         if self.emptyAccordance is not None:
             if str(type(self.emptyAccordance)) == "<class 'penger.Accordance'>":
-                self.logger.info(f'Start of the empty Accordance-{hash}...')
+                self.logger.info(f'Start check of the empty Accordance-{hashHex}...')
                 self.emptyAccordance.checkAndRun(penger=self, data=data)
-                self.logger.info(f'End of the empty Accordance-{hash}.')
+                self.logger.info(f'End check of the empty Accordance-{hashHex}.')
             else:
                 self.logger.info('Start of the empty accordance (base function)...')
                 self.emptyAccordance(data)
                 self.logger.info('End of the empty accordance (base function).')
 
     def SearchAccordance(self, data):
-        hash = '{0:010x}'.format(int(time.time() * 256))[4:]
+        status = False
+        hashHex = geHash()
 
         for acc in self.accordance:
             if str(type(acc)) == "<class 'penger.Accordance'>":
                 if acc.text == data['text']:
-                    self.logger.info(f'Start of the Accordance-{hash}...')
-                    acc.checkAndRun(penger=self, data=data)
-                    self.logger.info(f'End of the Accordance-{hash}.')
-                    return
+                    self.logger.info(f'Start of the Accordance-{hashHex}...')
+                    status = acc.checkAndRun(penger=self, data=data, hashHex=hashHex)
+                    self.logger.info(f'End of the Accordance-{hashHex}.')
+                    if status:
+                        return
             else:
                 if acc == data['text']:
                     self.logger.info('Start of the accordance (from dict)...')
                     self.accordance[acc](data)
                     self.logger.info('End of the accordance (from dict).')
                     return
-        self.startEmptyAccordance(data, hash)
+            hashHex = geHash()
+
+        if not status:
+            self.startEmptyAccordance(data, hashHex)
 
     def respondToMessage(self, updateJSON):
         data = self.getDataFromUpdate(updateJSON)
@@ -158,9 +184,19 @@ class Penger(object):
 
 class Accordance(object):
     def __init__(self, text, func, quick='all:all', isEnable=True, enableArgument=False, ifNotAuthorized=None,
-                 senderWhitelist=[], senderBlacklist=[], chatWhitelist=[], chatBlacklist=[]):
+                 senderWhitelist=None, senderBlacklist=None, chatWhitelist=None, chatBlacklist=None):
 
         super(Accordance, self).__init__()
+
+        if senderWhitelist is None:
+            senderWhitelist = []
+        if senderBlacklist is None:
+            senderBlacklist = []
+
+        if chatWhitelist is None:
+            chatWhitelist = []
+        if chatBlacklist is None:
+            chatBlacklist = []
 
         self.text = text
         self.func = func
@@ -195,7 +231,7 @@ class Accordance(object):
             func = self.func
 
         if self.isEnable:
-            self.log('Run accordance.')
+            self.log('Run the Accordance...')
             if self.enableArgument:
                 func(self)
             else:
@@ -279,8 +315,6 @@ class Accordance(object):
             if '-whitelist' in chatQuick:
                 authorizedChat.extend(self.senderWhitelist)
 
-
-
         return authorizedSender, authorizedChat, blockedSender, blockedChat
 
     def check(self, ID, penger=None, LIST='sender'):
@@ -304,15 +338,15 @@ class Accordance(object):
 
         return False
 
-    def checkAndRun(self, penger=None, data=None, senderID=None, chatID=None, hash=None, isEmptyAccordance=False):
+    def checkAndRun(self, penger=None, data=None, senderID=None, chatID=None, hashHex=None):
         status = False
 
-        if hash is None:
-            hash = '{0:010x}'.format(int(time.time() * 256))[4:]
+        if hashHex is None:
+            hashHex = geHash()
 
         if penger is not None:
-            self.logger = penger.logger.getChild(f'Accordance-{hash}')
-            self.logger.info(f'Start check and run accordance. [AccordanceText={self.text}]')
+            self.logger = penger.logger.getChild(f'Accordance-{hashHex}')
+            self.logger.info(f'Start check and run accordance. [AccordanceText={self.text}] [{self.quick}]')
 
         if senderID is not None and chatID is None:
             self.log('Write Chat the same as Sender.', logging.DEBUG)
@@ -343,22 +377,19 @@ class Accordance(object):
                     (senderID in authorizedSender and authorizedChat[0] == 'all') or \
                     (senderID in authorizedSender and chatID in authorizedChat):
                 self.log('Sender and/or Chat are authorized.')
-                self.log('Run the Accordance...')
                 status = self.run()
                 self.log(f'Run status: {status}')
+                status = True
             else:
                 self.log('Sender and/or Chat are not authorized.', logging.WARNING)
-                print(9999)
                 if self.ifNotAuthorized is not None:
-                    print(123123123)
                     if str(type(self.ifNotAuthorized)) == "<class 'penger.Accordance'>":
                         self.log('Redirect to other Accordance (ifNotAuthorized)...')
-                        self.ifNotAuthorized.checkAndRun(penger=penger, data=data)
+                        status = self.ifNotAuthorized.checkAndRun(penger=penger, data=data)
                     else:
                         self.log('Redirect to accordance (ifNotAuthorized)...')
                         self.run(func=self.ifNotAuthorized)
-                elif penger is not None and not isEmptyAccordance:
-                    self.log('Redirect to the empty accordance...')
-                    penger.startEmptyAccordance(data)
         else:
             self.log('Sender and/or Chat are blocked.', logging.WARNING)
+
+        return status
