@@ -5,7 +5,8 @@
 * [Getting started](#getting-started)
     * [Adding Penger as submodule to your repository (recommended)](#adding-penger-as-submodule-to-your-repository-recommended)
     * [Adding Penger as module file to your project](#adding-penger-as-module-file-to-your-project)
-* [Create your first bot](#create-your-first-bot) TODO
+* [Create your first bot (echo bot)](#create-your-first-bot-echo-bot)
+* [Creating a Accordance](#creating-a-accordance)
 
 ## Getting started
 How to use this library in your project? Quite easy.
