@@ -348,17 +348,18 @@ class Penger(object):
             bool: The status of run Accordance.
 
         """
+        # TODO comment
         status = False
         hashHex = getHash()
 
         for acc in self.accordance:
             if isinstance(acc, Accordance):
-                if acc.text == data['text']:
+                if data['text'].startswith(acc.command + " ") or data["text"] == acc.command:
                     self.logger.info(f'Start of the Accordance-{hashHex}...')
                     status = acc.checkAndRun(penger=self, data=data, hashHex=hashHex)
                     self.logger.info(f'End of the Accordance-{hashHex}.')
             else:
-                if acc == data['text']:
+                if data['text'].startswith(acc + " ") or data["text"] == acc:
                     self.logger.info('Start of the accordance (from dict)...')
                     self.accordance[acc](data)
                     status = True
@@ -424,7 +425,7 @@ class Penger(object):
 
 
 class Accordance(object):
-    def __init__(self, text, func, quick='all:all', isEnable=True, enableArgument=False, ifNotAuthorized=None,
+    def __init__(self, command, func, quick='all:all', isEnable=True, enableArgument=False, ifNotAuthorized=None,
                  senderWhitelist=None, senderBlacklist=None, chatWhitelist=None, chatBlacklist=None):
 
         super(Accordance, self).__init__()
@@ -439,7 +440,8 @@ class Accordance(object):
         if chatBlacklist is None:
             chatBlacklist = []
 
-        self.text = text
+        self.command = command
+
         self.func = func
         self.ifNotAuthorized = ifNotAuthorized
 
@@ -587,7 +589,7 @@ class Accordance(object):
 
         if penger is not None:
             self.logger = penger.logger.getChild(f'Accordance-{hashHex}')
-            self.logger.info(f'Start check and run accordance. [AccordanceText={self.text}] [{self.quick}]')
+            self.logger.info(f'Start check and run accordance. [AccordanceCommand={self.command}] [{self.quick}]')
 
         if senderID is not None and chatID is None:
             self.log('Write Chat the same as Sender.', logging.DEBUG)
