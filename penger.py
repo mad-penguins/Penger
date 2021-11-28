@@ -295,7 +295,7 @@ class Penger(object):
 
         """
         data = {'update_id': updateJSON['update_id'], 'sender_id': updateJSON['message']['from']['id'],
-                'chat_id': updateJSON['message']['chat']['id'], 'text': updateJSON['message']['text']}
+                'chat_id': updateJSON['message']['chat']['id'], 'text': updateJSON['message'].get('text', "None")}
 
         return data
 
