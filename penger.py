@@ -401,7 +401,8 @@ class Penger(object):
             bool: The status of getting updates.
 
         """
-        status = self.logStatus(self.makeRequest('getUpdates'),
+        parameters = {"offset": self.updateID + 1}
+        status = self.logStatus(self.makeRequest('getUpdates', parameters),
                                 'Getting updates.')
         updatesJSON = self.response.json()
 
