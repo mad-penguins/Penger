@@ -627,7 +627,7 @@ class Accordance(object):
             else:
                 self.log('Sender and/or Chat are not authorized.', logging.WARNING)
                 if self.ifNotAuthorized is not None:
-                    if str(type(self.ifNotAuthorized)) == "<class 'penger.Accordance'>":
+                    if isinstance(self.ifNotAuthorized, Accordance):
                         self.log('Redirect to other Accordance (ifNotAuthorized)...')
                         status = self.ifNotAuthorized.checkAndRun(penger=penger, data=data)
                     else:
